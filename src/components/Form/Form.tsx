@@ -1,28 +1,44 @@
 import type { ReactNode } from "react";
-import React, { forwardRef, Ref, useImperativeHandle } from "react";
-import { FieldValues, FormProvider, Resolver, useForm } from "react-hook-form";
+import React, { forwardRef, Ref, useEffect, useImperativeHandle } from "react";
+import {
+  FieldErrors,
+  FieldValues,
+  FormProvider,
+  Resolver,
+  useForm,
+} from "react-hook-form";
 import { useOnWatchForm } from "../../hooks";
 import { renderFormChild } from "../../utils";
+import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { FormRef } from "../../types";
 
-interface FormProps<T> {
+interface FormProps<T extends FieldValues> {
   children: ReactNode | ReactNode[];
   onSubmit?: (values: T) => void;
   defaultValues?: T;
   resolver?: Resolver<FieldValues, any> | undefined;
+  validationSchema?: yup.AnyObjectSchema;
   mode?: "onBlur" | "onChange" | "onSubmit" | "onTouched" | "all";
   onWatch?: (values: T) => void;
   watch?: {
     fields?: string[];
     onChange: (value: Array<any> | T) => void;
   };
+  onInvalid?: (errors: FieldErrors<FieldValues>) => void;
 }
 
-type FormRef = {
-  submit: () => void;
-};
-
 function FormInner<T extends FieldValues>(
-  { children, onSubmit, defaultValues, resolver, mode, watch }: FormProps<T>,
+  {
+    children,
+    onSubmit,
+    defaultValues,
+    resolver,
+    mode,
+    watch,
+    validationSchema,
+    onInvalid,
+  }: FormProps<T>,
   ref?: Ref<FormRef>,
 ) {
   const {
@@ -35,7 +51,7 @@ function FormInner<T extends FieldValues>(
   } = useForm({
     mode: mode,
     defaultValues: defaultValues as FieldValues,
-    resolver: resolver,
+    resolver: resolver ?? (validationSchema && yupResolver(validationSchema)),
   });
 
   useOnWatchForm(
@@ -48,8 +64,14 @@ function FormInner<T extends FieldValues>(
 
   useImperativeHandle(ref, () => ({
     submit: () => handleSubmit((values) => onSubmit?.(values as T))(),
-    reset: (resetData: FieldValues) => reset(resetData),
+    reset: (resetData?: FieldValues) => reset(resetData),
   }));
+
+  useEffect(() => {
+    if (!Object.keys(formState.errors).length) return;
+
+    onInvalid?.(formState.errors);
+  }, [JSON.stringify(formState.errors)]);
 
   return (
     <FormProvider
@@ -75,7 +97,7 @@ function FormInner<T extends FieldValues>(
   );
 }
 
-const Form = forwardRef(FormInner) as <T>(
+const Form = forwardRef(FormInner) as <T extends FieldValues>(
   props: FormProps<T> & { ref?: Ref<FormRef> },
 ) => ReturnType<typeof FormInner>;
 
