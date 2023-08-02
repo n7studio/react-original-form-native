@@ -1,6 +1,6 @@
 {
   "name": "@n7studio/react-original-form-native",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "The form based on react hook form for React Native",
   "private": false,
   "main": "./dist/cjs/index.js",
@@ -19,9 +19,11 @@
     "lint": "eslint \"{**/*,*}.{js,ts,jsx,tsx}\"",
     "lint --fix": "eslint \"{**/*,*}.{js,ts,jsx,tsx}\"",
     "prettier": "prettier --write --ignore-unknown .",
+    "prepublishOnly": "yarn prettier && yarn lint && yarn build",
     "prepare": "husky install"
   },
   "devDependencies": {
+    "@hookform/resolvers": "^3.1.0",
     "@types/react": "^18.0.28",
     "@typescript-eslint/eslint-plugin": "^5.56.0",
     "@typescript-eslint/parser": "^5.56.0",
@@ -37,12 +39,15 @@
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.43.7",
     "tslib": "^2.5.0",
-    "typescript": "^5.0.2"
+    "typescript": "^5.0.2",
+    "yup": "^0.32.11"
   },
   "peerDependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-hook-form": "^7.43.7"
+    "react": "^17 || ^18",
+    "react-dom": "^17 || ^18",
+    "react-hook-form": "^7.43.7",
+    "yup": "^0.32.11",
+    "@hookform/resolvers": "^3.1.0"
   },
   "keywords": [
     "react",
